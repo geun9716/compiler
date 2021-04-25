@@ -17,181 +17,180 @@
 %%
 
 program:
-    translation_unit
+    translation_unit                                        {root=makeNode(N_PROGRAM, NIL, $1, NIL); checkForwardReference();}
     ;
 
 translation_unit:
-    external_declaration
-    |translation_unit external_declaration
+    external_declaration                                    {$$=$1;}
+    |translation_unit external_declaration                  {$$=linkDeclaratorList($1,$2);}
     ;
 
-external_declaration:
-    function_definition
-    |declaration
+external_declaration:                       
+    function_definition                                     {$$=$1;}
+    |declaration                                            {$$=$1;}
     ;
 
 function_definition:
-    declaration_specifiers declarator compound_statement
-    |declarator compound_statement
+    declaration_specifiers declarator compound_statement    {$$=setFunctionDeclaratorSpecifier($2, $1);}    
+    |declarator compound_statement                          {$$=setFunctionDeclaratorBody($3, $3);}
     ;
 
 declaration_list_opt:
-    
-    |declaration_list
+                                                            {$$=NIL;}
+    |declaration_list                                       {$$=$1;}
     ;
 
 declaration_list:
-    declaration
-    |declaration_list declaration
+    declaration                                             {$$=$1;}
+    |declaration_list declaration                           {$$=linkDeclaratorList($1, $2);}
     ;
 
 declaration:
-    declaration_specifiers init_declarator_list_opt SEMICOLON
+    declaration_specifiers init_declarator_list_opt SEMICOLON   {$$=setDeclaratorListSpecifier($2, $1);}
     ;
 
 declaration_specifiers:
-    type_specifier
-    |storage_class_specifier
-    |type_specifier declaration_specifiers
-    |storage_class_specifier declaration_specifiers
+    type_specifier                                          {$$=makeSpecifier($1, 0);}
+    |storage_class_specifier                                {$$=makeSpecifier(0, $1);}
+    |type_specifier declaration_specifiers                  {$$=updateSpecifier($2, $1, 0);}
+    |storage_class_specifier declaration_specifiers         {$$=updateSpecifier($1, 0, $2;)}
     ;
 
 storage_class_specifier:
-    AUTO_SYM
-    |STATIC_SYM
-    |TYPEDEF_SYM
+    AUTO_SYM                                                {$$=S_AUTO;}
+    |STATIC_SYM                                             {$$=S_STATIC;}
+    |TYPEDEF_SYM                                            {$$=S_TYPEDEF;}
     ;
 
 init_declarator_list_opt:
-    
-    |init_declarator_list
+                                                            {$$=NIL;}
+    |init_declarator_list                                   {$$=$1;}
     ;
 
 init_declarator_list:
-    init_declarator
-    |init_declarator_list COMMA init_declarator
+    init_declarator                                         {$$=$1;}
+    |init_declarator_list COMMA init_declarator             {$$=linkDeclaratorList($1,$3);}
     ;
 
 init_declarator:
-    declarator
-    |declarator ASSIGN initializer
+    declarator                                              {$$=$1;}
+    |declarator ASSIGN initializer                          {$$=setDeclaratorInit($1,$3);}
     ;
 
 initializer:
-    constant_expression
-    |LR initializer_list RR
+    constant_expression                                     {$$=makeNode(N_INIT_LIST_ONE,NIL,$1,NIL);}
+    |LR initializer_list RR                                 {$$=$2;}
     ;
 
 initializer_list:
-    initializer
-    |initializer_list COMMA initializer
+    initializer                                             {$$=makeNode(N_INIT_LIST, $1, NIL, makeNode(N_INIT_LIST_NIL, NIL, NIL, NIL));}
+    |initializer_list COMMA initializer                     {$$=makeNodeList(N_INIT_LIST, $1, $3);}
     ;
 
 type_specifier:
-    struct_type_specifier
-    |enum_type_specifier
-    |TYPE_IDENTIFIER
+    struct_type_specifier                                   {$$=$1;}
+    |enum_type_specifier                                    {$$=$1;}
+    |TYPE_IDENTIFIER                                        {$$=$1;}
     ;
 
 struct_type_specifier:
-    struct_or_union IDENTIFIER LR struct_declaration_list RR
-    |struct_or_union LR struct_declaration_list RR
-    |struct_or_union IDENTIFIER
+    struct_or_union IDENTIFIER {$$=setTypeStructOrEnumIdentifier($1,$2,ID_STRUCT);} LR {$$=current_id; current_level++;} struct_declaration_list RR {checkForwardReference(); $$=setTypeField($3, $6); current_level--; current_id=$1;}
+    |struct_or_union {$$=makeType($1);} LR ($$=current_id;current_level++;) struct_declaration_list RR {checkForwardReference(); $$=setTypeField($2, $5); current_level++; current_id=$4;}
+    |struct_or_union IDENTIFIER {$$=getTypeStructOrEnumRefIdentifier($1, $2, ID_STRUCT);}
     ;
 
 struct_or_union:
-    STRUCT_SYM
-    |UNION_SYM
+    STRUCT_SYM  {$$=T_STRUCT;}
+    |UNION_SYM  {$$=T_UNION;}
     ;
 
 struct_declaration_list:
-    struct_declaration
-    |struct_declaration_list struct_declaration
+    struct_declaration                                      {$$=$1;}
+    |struct_declaration_list struct_declaration             {$$=linkDeclaratorList($1, $2);}
     ;
 
 struct_declaration:
-    type_specifier struct_declarator_list SEMICOLON
+    type_specifier struct_declarator_list SEMICOLON         {$$=setStructDeclaratorListSpecifier($2, $1);}
     ;
 
 struct_declarator_list:
-    struct_declarator
-    |struct_declarator_list COMMA struct_declarator
+    struct_declarator                                       {$$=$1;}
+    |struct_declarator_list COMMA struct_declarator         {$$=linkDeclaratorList($1, $3);}
     ;
 
 struct_declarator:
-    declarator
+    declarator                                              {$$=$1;}
     ;
 
 enum_type_specifier:
-    ENUM_SYM IDENTIFIER LR enumerator_list RR 
-    |ENUM_SYM LR enumerator_list RR 
-    |ENUM_SYM IDENTIFIER
+    ENUM_SYM IDENTIFIER {$$=setTypeStructOrEnumIdentifier(T_ENUM, $2, ID_ENUM);} LR enumerator_list RR {$$=setTypeField($3,$5);}               
+    |ENUM_SYM {$$=makeType(T_ENUM);} LR enumerator_list RR {$$=setTypeField($2, $4);} 
+    |ENUM_SYM IDENTIFIER {$$=getTypeOfStructOrEnumRefIdentifier(T_ENUM, $2, ID_ENUM);}
     ;
 
 enumerator_list:
-    enumerator
-    |enumerator_list COMMA enumerator
+    enumerator {$$=$1;}
+    |enumerator_list COMMA enumerator {$$=linkDeclaratorList($1,$3);}
     ;
 
 enumerator:
-    IDENTIFIER
-    |IDENTIFIER ASSIGN expression
+    IDENTIFIER {$$=setDeclaratorKind(makeIdentifier($1), ID_ENUM_LITERAL);}
+    |IDENTIFIER {$$=setDeclaratorKind(makeIdentifier($1), ID_ENUM_LITERAL);} ASSIGN expression {$$=setDeclaratorInit($2, $4);} 
     ;
 
 declarator:
-    pointer direct_declarator
-    |direct_declarator
+    pointer direct_declarator {$$=setDeclaratorElementType($2, $1);}
+    |direct_declarator {$$=$1;}
     ;
 
 pointer:
-    STAR
-    |STAR pointer
+    STAR {$$=makeType(T_POINTER);}
+    |STAR pointer {$$=setTypeElementType($2, makeType(T_POINTER));}
     ;
 
 direct_declarator:
-    IDENTIFIER
-    |LP declarator RP
-    |direct_declarator LB constant_expression_opt RB 
-    |direct_declarator LP parameter_type_list_opt RP 
+    IDENTIFIER {$$=makeIdentifier($1);}
+    |LP declarator RP {$$=$2;}
+    |direct_declarator LB constant_expression_opt RB {$$=setDeclaratorElementType($1, setTypeExpr(makeType(T_ARRAY), $3));} 
+    |direct_declarator LP {$$=current_id; current_level++} parameter_type_list_opt RP {checkForwardReference(); current_id = $3; current_level--; $$=setDeclaratorElementType($1, setTypeField(makeType(T_FUNC), $4));} 
     ;
 
 parameter_type_list_opt:
-
-    |parameter_type_list
+                                    {$$=NIL;}
+    |parameter_type_list            {$$=$1;}
     ;
 
 parameter_type_list:
-    parameter_list
-    |parameter_list COMMA DOTDOTDOT
+    parameter_list {$$=$1;}
+    |parameter_list COMMA DOTDOTDOT {$$=linkDeclaratorList($1, setDeclaratorKind(makeDummyIdentifier(), ID_PARM));}
     ;
 
 parameter_list:
-    parameter_declaration
-    |parameter_list COMMA parameter_declaration
+    parameter_declaration {$$=$1;}
+    |parameter_list COMMA parameter_declaration {$$=linkDeclaratorList($1, $3);}
     ;
 
 parameter_declaration:
-    declaration_specifiers declarator
-    |declaration_specifiers abstract_declarator_opt
+    declaration_specifiers declarator {$$=setParameterDeclaratorSpecifier($2, $1);}
+    |declaration_specifiers abstract_declarator_opt {$$=setParameterDeclaratorSpecifier(setDeclaratorType(makeDummyIdentifier(), $2), $1);}
     ;
 
 abstract_declarator_opt:
+                                    {$$=NIL;}
+    |abstract_declarator            {$$=$1;}
     
-    |abstract_declarator
-    ;
-
 abstract_declarator:
-    direct_abstract_declarator
-    |pointer
-    |pointer direct_abstract_declarator
+    direct_abstract_declarator      {$$=$1}
+    |pointer                        {$$=makeType(T_POINTER);}
+    |pointer direct_abstract_declarator {$$=setTypeElementType($2, makeType(T_POINTER));}
     ;
 
 direct_abstract_declarator:
-    LP abstract_declarator RP
-    |LB constant_expression_opt RB
-    |direct_abstract_declarator LB constant_expression_opt RB
-    |LP parameter_type_list_opt RP
-    |direct_abstract_declarator LP parameter_type_list_opt RP
+    LP abstract_declarator RP {$$=$2;}
+    |LB constant_expression_opt RB {$$=setTypeExpr(makeType(T_ARRAY), $2);}
+    |direct_abstract_declarator LB constant_expression_opt RB {$$=setTypeElementType($1, setTypeExpr(makeType(T_ARRAY), $3));}
+    |LP parameter_type_list_opt RP {$$=setTypeExpr(makeType(T_FUNC), $2);}
+    |direct_abstract_declarator LP parameter_type_list_opt RP {$$=setTypeElementType($1, setTypeExpr(makeType(T_FUNC), $3));}
     ;
 
 statement_list_opt:

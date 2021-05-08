@@ -1,7 +1,12 @@
 
 %{
-    #include <stdio.h>
-    #include <stdlib.h>
+    #include "yaccsupfunc.h"
+    #include "type.h"
+    extern int line_no, syntax_err;
+    extern A_NODE *root;
+    extern A_ID *current_id;
+    extern int current_level;
+    extern A_TYPE * int_type;
 %}
 
 %start program
@@ -194,36 +199,36 @@ direct_abstract_declarator:
     ;
 
 statement_list_opt:
-    
-    |statement_list 
+                                {$$=makeNode(N_STMT_LIST_NIL, NIL, NIL, NIL);}
+    |statement_list             {$$=$1;}
     ;
 
 statement_list:
-    statement
-    |statement_list statement
+    statement                   {$$=makeNode(N_STMT_LIST_NIL, $1, NIL, makeNode(N_STMT_LIST_NIL,  NIL, NIL, NIL));}
+    |statement_list statement   {$$=makeNodeList(N_STMT_LIST, $1, $2);}
     ;
 
 statement:
-    labeled_statement
-    |compound_statement
-    |expression_statement
-    |selection_statement
-    |iteration_statement
-    |jump_statement
+    labeled_statement           {$$=$1;}
+    |compound_statement         {$$=$1;}
+    |expression_statement       {$$=$1;}
+    |selection_statement        {$$=$1;}
+    |iteration_statement        {$$=$1;}
+    |jump_statement             {$$=$1;}
     ;
 
 labeled_statement:
-    CASE_SYM constant_expression COLON statement
-    |DEFAULT_SYM COLON statement
+    CASE_SYM constant_expression COLON statement    {$$=makeNode(N_STMT_LABEL_CASE, $2, NIL, $4);}
+    |DEFAULT_SYM COLON statement                    {$$=makeNode(N_STMT_LABEL_DEFAULT, NIL, $3, NIL);}
     ;
 
 compound_statement:
-    LR declaration_list_opt statement_list_opt RR
+    LR {$$=current_id; current_level++;} declaration_list_opt statement_list_opt RR {checkForwardReference(); $$=makeNode(N_STMT_COMPOUND, $3, NIL, $4); current_id=$2; current_level--;}
     ;
 
 expression_statement:
-    SEMICOLON
-    |expression SEMICOLON
+    SEMICOLON                   {$$=makeNode(N_STMT_EMPTY, NIL, NIL, NIL);}
+    |expression SEMICOLON       {$$=makeNode(N_STMT_EXPRESSION, NIL, $1,NIL);}
     ;
 
 selection_statement:
@@ -384,7 +389,6 @@ type_name:
     ;
 
 %%
-
 int yyerror(char *s){
     printf("Error : %s \n", s);
     exit(1);

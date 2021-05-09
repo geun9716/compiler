@@ -2,7 +2,7 @@
 %{
 #define YYSTYPE_IS_DECLARED 1
 typedef long YYSTYPE;
-#include "yaccsupfunc.h"
+#include "supportfunc.h"
 
 extern int line_no, syntax_err;
 extern A_NODE *root;
@@ -70,7 +70,7 @@ storage_class_specifier:
     ;
 
 init_declarator_list_opt:
-                                                            {$$=NIL;}
+                                                            {$$=makeDummyIdentifier();}
     |init_declarator_list                                   {$$=$1;}
     ;
 
@@ -101,7 +101,7 @@ type_specifier:
     ;
 
 struct_type_specifier:
-    struct_or_union IDENTIFIER {$$=setTypeStructOrEnumIdentifier($1,$2,ID_STRUCT);} LR {$$=current_id; current_level++;} struct_declaration_list RR {checkForwardReference(); $$=setTypeField($3, $6); current_level--; current_id=$1;}
+    struct_or_union IDENTIFIER {$$=setTypeStructOrEnumIdentifier($1,$2,ID_STRUCT);} LR {$$=current_id; current_level++;} struct_declaration_list RR {checkForwardReference(); $$=setTypeField($3, $6); current_level--; current_id=$5;}
     |struct_or_union {$$=makeType($1);} LR {$$=current_id;current_level++;} struct_declaration_list RR {checkForwardReference(); $$=setTypeField($2, $5); current_level++; current_id=$4;}
     |struct_or_union IDENTIFIER {$$=getTypeOfStructOrEnumRefIdentifier($1, $2, ID_STRUCT);}
     ;
@@ -159,7 +159,7 @@ direct_declarator:
     IDENTIFIER {$$=makeIdentifier($1);}
     |LP declarator RP {$$=$2;}
     |direct_declarator LB constant_expression_opt RB {$$=setDeclaratorElementType($1, setTypeExpr(makeType(T_ARRAY), $3));} 
-    |direct_declarator LP {$$=current_id; current_level++;} parameter_type_list_opt RP {checkForwardReference(); current_id = $3; current_level--; $$=setDeclaratorElementType($1, setTypeField(makeType(T_FUNC), $4));} 
+    |direct_declarator LP {$$=current_id; current_level++;} parameter_type_list_opt RP {checkForwardReference(); current_id=$3; current_level--; $$=setDeclaratorElementType($1, setTypeField(makeType(T_FUNC), $4));} 
     ;
 
 parameter_type_list_opt:
@@ -400,9 +400,6 @@ int yyerror(char *s){
 
 void main() 
 {
-    printf("initialize\n");
-    initialize();
-    printf("yyparse\n");
     yyparse();
     printf("Done\n");
 }

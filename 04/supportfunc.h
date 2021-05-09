@@ -157,7 +157,7 @@ A_SPECIFIER *updateSpecifier(A_SPECIFIER * p , A_TYPE * t, S_KIND s){
             if(p->type == t){
                 ;
             } else {
-                syntax_error(24);
+                syntax_error(24, "");
             }
         } else {
             p->type = t;
@@ -168,7 +168,7 @@ A_SPECIFIER *updateSpecifier(A_SPECIFIER * p , A_TYPE * t, S_KIND s){
             if(p->stor == s){
                 ;
             } else {
-                syntax_error(24);
+                syntax_error(24, "");
             }
         } else {
             p->stor = s;
@@ -297,11 +297,11 @@ A_ID *setDeclaratorListSpecifier(A_ID * id, A_SPECIFIER * p){
 A_ID *setFunctionDeclaratorSpecifier(A_ID * id, A_SPECIFIER * p){
     A_ID *a;
     if(p->stor){
-        syntax_error(25);
+        syntax_error(25, "");
     }
     setDefaultSpecifier(p);
     if(id->type->kind!=T_FUNC){
-        syntax_error(21);
+        syntax_error(21, "");
         return id;
     } else {
         id=setDeclaratorElementType(id, p->type);
@@ -322,7 +322,7 @@ A_ID *setFunctionDeclaratorSpecifier(A_ID * id, A_SPECIFIER * p){
             if(strlen(a->name))
                 current_id = a;
             else if (a->type)
-                syntax_error(23);
+                syntax_error(23, "");
             a=a->link;
         }
         return id;
@@ -337,7 +337,7 @@ A_ID *setParameterDeclaratorSpecifier(A_ID * id, A_SPECIFIER * p){
         syntax_error(12, id->name);
     }
     if( p->stor || p->type == void_type)
-        syntax_error(14);
+        syntax_error(14, "");
     setDefaultSpecifier(p);
     id=setDeclaratorElementType(id, p->type);
     id->kind=ID_PARM;
@@ -357,7 +357,7 @@ A_ID *setStructDeclaratorListSpecifier(A_ID * id, A_TYPE * t){
 }
 A_TYPE *setTypeNameSpecifier(A_TYPE * t, A_SPECIFIER * p){
     if(p->stor)
-        syntax_error(20);
+        syntax_error(20, "");
     setDefaultSpecifier(p);
     t=setTypeElementType(t, p->type);
     return t;
@@ -431,7 +431,7 @@ BOOLEAN isNotSameType(A_TYPE * t1, A_TYPE * t2){
         return (t1!=t2);
 }
 BOOLEAN isPointerOrArrayType(A_TYPE * t){
-    ;
+    return t->kind == T_POINTER || t->kind == T_ARRAY;
 }
 void syntax_error(int i, char *s){
     syntax_err++;

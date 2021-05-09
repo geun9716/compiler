@@ -13,4 +13,3 @@ union g{
     float test2;
 };
 enum h{kim, park, lee, kang};
-char *i[]();

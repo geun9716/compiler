@@ -1,6 +1,6 @@
 int kim=10+20;
-float * park[3];
-typedef struct s1 {char *name; int value;} STR;
+float *park[3];
+typedef struct s1 {char *name; int value; struct s1 * next;} STR;
 STR chang[5];
 enum e1 {red=10, green, blue} song;
 int fun(int x, int y){

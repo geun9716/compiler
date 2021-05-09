@@ -1,5 +1,5 @@
 example : lex.yy.c y.tab.c
-	cc lex.yy.c y.tab.c
+	cc lex.yy.c y.tab.c 
 
 lex.yy.c : kim.l
 	lex kim.l

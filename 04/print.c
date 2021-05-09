@@ -1,5 +1,5 @@
 #include "type.h"
-
+#include <stdio.h>
 char * node_name[] = {
 	"N_NULL",
 	"N_PROGRAM",

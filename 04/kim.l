@@ -4,16 +4,19 @@ delim [\t]
 line [\n]
 ws {delim}+
 
+
 %{
-    #define YYSTYPE_IS_DECLARED 1
-    typedef long YYSTYPE
-    #include "type.h"
-    #include "y.tab.h"
-    extern int yylval;
-    extern int line_no;
-    extern A_ID * current_id;
-    char * makeString();
-    int checkIdentifier();
+#define YYSTYPE_IS_DECLARED 1
+typedef long YYSTYPE;
+
+#include "type.h"
+#include "y.tab.h"
+
+extern int line_no;
+extern A_ID * current_id;
+
+char * makeString();
+int checkIdentifier();
 %}
 
 %%
@@ -88,14 +91,25 @@ char * makeString(char * s)
 }
 
 int checkIdentifier(char *s){
-	char *table[]={"int", "float", "char", "void"};
-
-    for(int i=0; i < 4; i++){
-        if(!strcmp(s, table[i])){
-            return TYPE_IDENTIFIER;
+	A_ID *id;
+    char *t;
+    id = current_id;
+    while(id){
+        if(strcmp(id->name, s)==0){
+            break;
         }
+        id=id->prev;
     }
-    return IDENTIFIER;
+    if(id==0){
+        yylval=makeString(s);
+        return IDENTIFIER;
+    } else if (id->kind == ID_TYPE){
+        yylval=id->type;
+        return TYPE_IDENTIFIER;
+    } else {
+        yylval=id->name;
+        return IDENTIFIER;
+    }
 }
 
 int yywrap() {

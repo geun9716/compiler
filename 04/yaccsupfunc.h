@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "type.h"
 #include "y.tab.h"
 extern char * yytext;
@@ -14,10 +15,10 @@ A_NODE *makeNodeList(NODE_NAME, A_NODE *, A_NODE *);
 A_ID * makeIdentifier(char *);
 A_ID * makeDummyIdentifier();
 A_TYPE * makeType(T_KIND);
-A_SPECIFIER *updateSpecifier(A_TYPE *, S_KIND);
+A_SPECIFIER *makeSpecifier(A_TYPE *, S_KIND);
 A_ID * searchIdentifier(char * , A_ID *);
 A_ID * searchIdentifierAtCurrentLevel(char *, A_ID *);
-A_SPECIFIER *updateSpecifer(A_SPECIFIER *, A_TYPE *, S_KIND);
+A_SPECIFIER *updateSpecifier(A_SPECIFIER *, A_TYPE *, S_KIND);
 void checkForwardReference();
 void setDefaultSpecifier(A_SPECIFIER *);
 A_ID * linkDeclaratorList(A_ID *, A_ID *);
@@ -31,17 +32,17 @@ A_ID *setDelcaratorTypeAndKind(A_ID *, A_TYPE *, ID_KIND);
 A_ID *setDelcaratorListSpecifier(A_ID *, A_SPECIFIER *);
 A_ID *setFunctionDeclaratorSpecifier(A_ID *, A_SPECIFIER *);
 A_ID *setFunctionDeclaratorBody(A_ID *, A_NODE *);
-A_ID *setParameterDeclaratorSpecifier(A_ID *, A_SPECIFIER);
+A_ID *setParameterDeclaratorSpecifier(A_ID *, A_SPECIFIER *);
 A_ID *setStructDeclaratorListSpecifier(A_ID *, A_TYPE *);
 A_TYPE *setTypeNameSpecifier(A_TYPE *, A_SPECIFIER *);
 A_TYPE *setTypeElementType(A_TYPE *, A_TYPE *);
-A_TYPE *setTypeField(A_TYPE *, A_ID);
+A_TYPE *setTypeField(A_TYPE *, A_ID *);
 A_TYPE *setTypeExpr(A_TYPE *, A_NODE *);
 A_TYPE *setTypeAndKindOfDeclarator(A_TYPE *, ID_KIND, A_ID *);
 A_TYPE *setTypeStructOrEnumIdentifier(T_KIND, char *, ID_KIND);
-// BOOLEAN isNotSameFormalParameter(A_ID *, A_ID *);
-// BOOLEAN isNotSameType(A_TYPE *, A_TYPE *);
-// BOOLEAN isPointerOrArrayType(A_TYPE *);
+BOOLEAN isNotSameFormalParameter(A_ID *, A_ID *);
+BOOLEAN isNotSameType(A_TYPE *, A_TYPE *);
+BOOLEAN isPointerOrArrayType(A_TYPE *);
 void syntax_error();
 void initialize();
 
@@ -62,7 +63,7 @@ A_NODE *makeNodeList(NODE_NAME n, A_NODE * a, A_NODE * b){
     A_NODE * m, *k;
     k = a;
     while(k->rlink){
-        k = k->rlink
+        k = k->rlink;
     }
     m = (A_NODE *)malloc(sizeof(A_NODE));
     m->name = n;
@@ -121,7 +122,7 @@ A_TYPE * makeType(T_KIND k){
     t->prt = FALSE;
     return t;
 }
-A_SPECIFIER *updateSpecifier(A_TYPE * t, S_KIND s){
+A_SPECIFIER *makeSpecifier(A_TYPE * t, S_KIND s){
     A_SPECIFIER * p;
     p = malloc(sizeof(A_SPECIFIER));
     p->type=t;
@@ -130,7 +131,7 @@ A_SPECIFIER *updateSpecifier(A_TYPE * t, S_KIND s){
     return p;
 }
 A_ID * searchIdentifier(char * s, A_ID * id){
-    whlie(id){
+    while(id) {
         if(strcmp(id->name, s) == 0){
             break;
         }
@@ -141,7 +142,7 @@ A_ID * searchIdentifier(char * s, A_ID * id){
 A_ID * searchIdentifierAtCurrentLevel(char * s, A_ID * id){
     while(id){
         if(id->level < current_level){
-            return NIL
+            return NIL;
         }
         if(strcmp(id->name, s) == 0){
             break;
@@ -150,7 +151,7 @@ A_ID * searchIdentifierAtCurrentLevel(char * s, A_ID * id){
     }
     return id;
 }
-A_SPECIFIER *updateSpecifer(A_SPECIFIER * p , A_TYPE * t, S_KIND s){
+A_SPECIFIER *updateSpecifier(A_SPECIFIER * p , A_TYPE * t, S_KIND s){
     if(t){
         if (p->type){
             if(p->type == t){
@@ -170,7 +171,7 @@ A_SPECIFIER *updateSpecifer(A_SPECIFIER * p , A_TYPE * t, S_KIND s){
                 syntax_error(24);
             }
         } else {
-            p->stor = s
+            p->stor = s;
         }
     }
 }
@@ -331,11 +332,11 @@ A_ID *setFunctionDeclaratorBody(A_ID * id, A_NODE * n){
     id->type->expr = n;
     return id;
 }
-A_ID *setParameterDeclaratorSpecifier(A_ID * id, A_SPECIFIER p){
+A_ID *setParameterDeclaratorSpecifier(A_ID * id, A_SPECIFIER * p){
     if(searchIdentifierAtCurrentLevel(id->name, id->prev)){
         syntax_error(12, id->name);
     }
-    if(p->stor || p->type == void_type)
+    if( p->stor || p->type == void_type)
         syntax_error(14);
     setDefaultSpecifier(p);
     id=setDeclaratorElementType(id, p->type);
@@ -371,7 +372,7 @@ A_TYPE *setTypeElementType(A_TYPE * t, A_TYPE * s){
     q->element_type = s;
     return t;
 }
-A_TYPE *setTypeField(A_TYPE * t, A_ID id){
+A_TYPE *setTypeField(A_TYPE * t, A_ID * id){
     t->field = id;
     return t;
 }
@@ -380,8 +381,9 @@ A_TYPE *setTypeExpr(A_TYPE * t, A_NODE * n){
     return t;
 }
 A_TYPE *setTypeAndKindOfDeclarator(A_TYPE * t, ID_KIND k, A_ID * id){
-    if(searchIdentifierAtCurrentLevel(id->name, id->prev))
+    if(searchIdentifierAtCurrentLevel(id->name, id->prev)){
         syntax_error(12, id->name);
+    }
     id->type=t;
     id->kind=k;
     return t;
@@ -407,30 +409,30 @@ A_TYPE *setTypeStructOrEnumIdentifier(T_KIND k, char * s, ID_KIND kk){
     id->type = t;
     return t;
 }
-// BOOLEAN isNotSameFormalParameter(A_ID * a, A_ID * b){
-//     if(a==NIL){
-//         return FALSE;
-//     }
-//     while(a){
-//         if(b==NIL || isNotSameType(a->type, b->type))
-//             return TRUE;
-//         a=a->link;
-//         b=b->link;
-//     }
-//     if(b)
-//         return TRUE;
-//     else
-//         return FALSE;
-// }
-// BOOLEAN isNotSameType(A_TYPE * t1, A_TYPE * t2){
-//     if(isPointerOrArrayType(t1) || isPointerOrArrayType(t2))
-//         return (isNotSameType(t1->element_type, t2->element_type));
-//     else
-//         return (t1!=t2);
-// }
-// BOOLEAN isPointerOrArrayType(A_TYPE * t){
-
-// }
+BOOLEAN isNotSameFormalParameter(A_ID * a, A_ID * b){
+    if(a==NIL){
+        return FALSE;
+    }
+    while(a){
+        if(b==NIL || isNotSameType(a->type, b->type))
+            return TRUE;
+        a=a->link;
+        b=b->link;
+    }
+    if(b)
+        return TRUE;
+    else
+        return FALSE;
+}
+BOOLEAN isNotSameType(A_TYPE * t1, A_TYPE * t2){
+    if(isPointerOrArrayType(t1) || isPointerOrArrayType(t2))
+        return (isNotSameType(t1->element_type, t2->element_type));
+    else
+        return (t1!=t2);
+}
+BOOLEAN isPointerOrArrayType(A_TYPE * t){
+    ;
+}
 void syntax_error(int i, char *s){
     syntax_err++;
     printf("line %d : syntax error : ", line_no);
@@ -484,9 +486,35 @@ void initialize(){
     void_type->check = TRUE;
     string_type->size = 4;
     string_type->check = TRUE;
+    printf("type initialize\n");
+    //printf(char *, ...) library function
+    setDeclaratorTypeAndKind(
+        makeIdentifier("printf"),
+        setTypeField(
+            setTypeElementType(makeType(T_FUNC), void_type),
+            linkDeclaratorList(
+                setDeclaratorTypeAndKind(makeDummyIdentifier(), string_type, ID_PARM),
+                setDeclaratorKind(makeDummyIdentifier(), ID_PARM))),
+      ID_FUNC);
+    //scanf(char *, ...) library function
+    setDeclaratorTypeAndKind(
+        makeIdentifier("scanf"),
+        setTypeField(
+            setTypeElementType(makeType(T_FUNC), void_type),
+            linkDeclaratorList(
+                setDeclaratorTypeAndKind(makeDummyIdentifier(), string_type, ID_PARM),
+                setDeclaratorKind(makeDummyIdentifier(), ID_PARM))),
+        ID_FUNC);
 
-    //printf(char *, ...)
-    
+    setDeclaratorTypeAndKind(
+        makeIdentifier("malloc"),
+        setTypeField(
+            setTypeElementType(makeType(T_FUNC), string_type),
+            linkDeclaratorList(
+                setDeclaratorTypeAndKind(makeDummyIdentifier(), int_type, ID_PARM),
+                setDeclaratorKind(makeDummyIdentifier(), ID_PARM))),
+        ID_FUNC);
+
 }
 
 

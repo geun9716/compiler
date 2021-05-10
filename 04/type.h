@@ -94,7 +94,7 @@ typedef struct s_type {
 
 
 typedef struct s_id {
-	char *name;
+	char * name;
 	ID_KIND kind;
 	S_KIND specifier;
 	int level;

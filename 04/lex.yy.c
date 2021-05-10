@@ -1109,7 +1109,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 58:
 YY_RULE_SETUP
-#line 83 "kim.l"
+#line 82 "kim.l"
 ECHO;
 	YY_BREAK
 #line 1116 "lex.yy.c"
@@ -2117,8 +2117,9 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 83 "kim.l"
+#line 82 "kim.l"
 
+#include <string.h>
 
 char * makeString(char * s)
 {
@@ -2140,13 +2141,13 @@ int checkIdentifier(char *s){
     }
     if(id==0){
         yylval=makeString(s);
-        return IDENTIFIER;
+        return (IDENTIFIER);
     } else if (id->kind == ID_TYPE){
         yylval=id->type;
-        return TYPE_IDENTIFIER;
+        return (TYPE_IDENTIFIER);
     } else {
         yylval=id->name;
-        return IDENTIFIER;
+        return (IDENTIFIER);
     }
 }
 

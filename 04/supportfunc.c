@@ -1,6 +1,6 @@
 #include "supportfunc.h"
 
-extern char * yytext;
+extern char *yytext;
 
 A_TYPE *int_type, *char_type, *void_type, *float_type, *string_type;
 A_NODE *root;
@@ -8,7 +8,6 @@ A_ID *current_id = NIL;
 int syntax_err = 0;
 int line_no = 1;
 int current_level=0;
-
 
 A_NODE *makeNode(NODE_NAME n, A_NODE *a, A_NODE *b, A_NODE *c){
     A_NODE * m;
@@ -20,25 +19,23 @@ A_NODE *makeNode(NODE_NAME n, A_NODE *a, A_NODE *b, A_NODE *c){
     m->type = NIL;
     m->line = line_no;
     m->value = 0;
-
     return(m);
 }
 //initializer_list
 A_NODE *makeNodeList(NODE_NAME n, A_NODE *a, A_NODE *b){
-    A_NODE * m, *k;
+    A_NODE *m, *k;
     k = a;
-    while(k->rlink){
+    while(k->rlink)
         k = k->rlink;
-    }
     m = (A_NODE *)malloc(sizeof(A_NODE));
-    m->name = n;
+    m->name = k->name;
     m->llink = NIL;
     m->clink = NIL;
     m->rlink = NIL;
     m->type = NIL;
     m->line = line_no;
     m->value = 0;
-    k->name - n;
+    k->name = n;
     k->llink = b;
     k->rlink = m;
     return (a);
@@ -73,7 +70,7 @@ A_ID * makeDummyIdentifier(){
     id->link=NIL;
     id->line=line_no;
     id->value=0;
-    id->prev = 0;
+    id->prev=0;
     return (id);  
 }
 A_TYPE * makeType(T_KIND k){

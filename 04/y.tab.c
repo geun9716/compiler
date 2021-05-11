@@ -74,11 +74,11 @@ typedef long YYSTYPE;
 #include "supportfunc.h"
 
 extern int line_no, syntax_err;
-extern char *yytext;
-extern int yylex();
 extern A_NODE *root;
+
 extern A_ID *current_id;
 extern int current_level;
+
 extern A_TYPE * int_type;
 
 #line 85 "y.tab.c"

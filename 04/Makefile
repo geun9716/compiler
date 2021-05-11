@@ -1,5 +1,5 @@
 example : lex.yy.c y.tab.c
-	gcc -g -w lex.yy.c y.tab.c print.c supportfunc.c main.c
+	gcc -g -w -o com lex.yy.c y.tab.c print.c supportfunc.c main.c
 
 lex.yy.c : kim.l
 	lex kim.l

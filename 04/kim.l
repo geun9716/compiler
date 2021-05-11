@@ -8,13 +8,10 @@ ws {delim}+
 %{
 #define YYSTYPE_IS_DECLARED 1
 typedef long YYSTYPE;
-
-#include "type.h"
 #include "y.tab.h"
-
+#include "type.h"
 extern int line_no;
 extern A_ID * current_id;
-
 char * makeString();
 int checkIdentifier();
 %}
@@ -93,11 +90,12 @@ char * makeString(char * s)
 int checkIdentifier(char *s){
 	A_ID *id;
     char *t;
+
     id = current_id;
+    
     while(id){
-        if(strcmp(id->name, s)==0){
+        if(strcmp(id->name, s)==0)
             break;
-        }
         id=id->prev;
     }
     if(id==0){

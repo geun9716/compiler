@@ -404,10 +404,7 @@ BOOLEAN isNotSameType(A_TYPE * t1, A_TYPE * t2){
         return (t1 != t2);
 }
 BOOLEAN isPointerOrArrayType(A_TYPE * t){
-    if (t && (t->kind == T_POINTER || t->kind == T_ARRAY))
-        return TRUE;
-    else
-        return FALSE;
+    return t->kind == T_POINTER || t->kind == T_ARRAY;
 }
 void initialize(){
     int_type = setTypeAndKindOfDeclarator(makeType(T_ENUM), ID_TYPE, makeIdentifier("int"));

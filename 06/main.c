@@ -1,14 +1,23 @@
 #include <stdio.h>
 #include "print.h"
 #include "sem_print.h"
+#include "code_generator.h"
 
 extern int syntax_err;
 extern int semantic_err;
+extern int gen_err;
 extern A_NODE * root;
-
+FILE * fout;
 
 void main() 
 {
+
+    if ((fout = fopen("a.asm", "w")) == NULL)
+    {
+        printf("can not open output file: a.asm\n");
+        exit(1);
+    }
+
     initialize();
     printf("initialize\n");
     yyparse();
@@ -27,4 +36,14 @@ void main()
         return ;
     }
     print_sem_ast(root);
+    printf("print semantic\n");
+
+    code_generation(root);
+    
+    if (gen_err){
+        printf("code generation error\n");
+        return ;
+    }
+    printf("==========================");
+    printf("Complete Code Generation\n");
 }

@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include "print.h"
 #include "sem_print.h"
-#include "code_generator.h"
 
 extern int syntax_err;
 extern int semantic_err;
@@ -28,6 +27,7 @@ void main()
     }
     print_ast(root);
     printf("print syntax\n");
+
     semantic_analysis(root);
     printf("semantic Analysis\n");
     
@@ -38,8 +38,8 @@ void main()
     print_sem_ast(root);
     printf("print semantic\n");
 
+    printf("code generation");
     code_generation(root);
-    
     if (gen_err){
         printf("code generation error\n");
         return ;

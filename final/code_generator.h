@@ -2,7 +2,7 @@
 #include <string.h>
 #include "type.h"
 
-typedef enum OP{
+typedef enum op{
     OP_NULL,
     LOD, LDX, LDXB, LDA, LITI,
     STO, STOB, STX, STXB,
